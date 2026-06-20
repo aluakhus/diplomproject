@@ -71,13 +71,11 @@ int CardPoints(int value)
     }
 }
 
-int HandValue() 
-{
 
-}
 
 int main()
 {
+    int a;
     int choice;
     string  name;
 
