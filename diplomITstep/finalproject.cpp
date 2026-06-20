@@ -3,12 +3,7 @@
 #include <fstream>
 using namespace std;
 
-class Card {
-public:
-    int value; 
-};
-
-Card deck[52];
+char board[3][3];
 
 class Player {
 protected:
@@ -44,44 +39,62 @@ public:
     }
 };
 
-void CreateDeck()
+void PrintBoard()
 {
-    int index = 0;
-
-    for (int value = 2; value <= 14; value++) {
-        for (int suit = 0; suit < 4; suit++) {
-            deck[index].value = value;
-            index++;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            cout << board[i][j] << " ";
         }
+        cout << endl;
     }
-
-    random_shuffle(deck, deck + 52);
 }
 
-int CardPoints(int value) 
+bool checkWin(char p) {
+    // Строки
+    for (int i = 0; i < 3; i++) {
+        if (board[i][0] == p &&
+            board[i][1] == p &&
+            board[i][2] == p)
+            return true;
+    }
+
+    // Столбцы
+    for (int j = 0; j < 3; j++) {
+        if (board[0][j] == p &&
+            board[1][j] == p &&
+            board[2][j] == p)
+            return true;
+    }
+
+    // Диагонали
+    if (board[0][0] == p &&
+        board[1][1] == p &&
+        board[2][2] == p)
+        return true;
+
+    if (board[0][2] == p &&
+        board[1][1] == p &&
+        board[2][0] == p)
+        return true;
+
+    return false;
+}
+
+void play(Player& player)
 {
-    if (value >= 11 && value <= 13) {
-        return 10;
-    }
-    else if (value == 14) {
-        return 11;
-    }
-    else {
-        return value;
-    }
+
+
 }
-
-
 
 int main()
 {
-    int a;
     int choice;
     string  name;
 
     cout << "Enter your name: ";
     cin >> name;
     Player player(name);
+
 
     while (true) {
         cout << "Menu" << endl;
@@ -94,8 +107,11 @@ int main()
         cin >> choice;
         switch (choice) {
         case 1:
+            PrintBoard();
+            break;
+        case 2:
+            player.ShowInfo();
             break;
         }
-
     }
 }
