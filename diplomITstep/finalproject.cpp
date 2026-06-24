@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+
 using namespace std;
 
 char board[3][3];
@@ -8,11 +9,13 @@ class Player {
 protected:
     string name;
     int wins;
+    int gamesPlayed;
 
 public:
-    Player(string name, int wins = 0) {
+    Player(string name, int wins = 0, int gamesPlayed = 0) {
         this->name = name;
         this->wins = wins;
+        this->gamesPlayed = gamesPlayed;
     }
     void ShowInfo() {
         cout << "Имя: " << name << endl;
@@ -20,6 +23,13 @@ public:
     }
     void AddWin() {
         wins++;
+    }
+    void ShowStatistics() {
+        double percent = (double)wins / gamesPlayed * 100;
+        cout << "Процент побед: "<< percent<< "%\n";
+    }
+    void AddGamesPlayed() {
+        gamesPlayed++;
     }
 };
 
@@ -150,7 +160,7 @@ void play(Player& player)
 
 void SaveGame(Player& player)
 {
-    ofstream file("GameSave.txt");
+    ofstream file("saves.txt");
 
     for (int i = 0; i < 3; i++)
     {
@@ -162,12 +172,12 @@ void SaveGame(Player& player)
     }
 
     file.close();
-    cout << "Игра сохранена\n" << endl;
+    cout << "Игра сохранена/n" << endl;
 }
 
 bool LoadGame()
 {
-    ifstream file("save.txt");
+    ifstream file("saves.txt", ios:: app);
 
     for (int i = 0; i < 3; i++)
     {
@@ -178,7 +188,7 @@ bool LoadGame()
     }
 
     file.close();
-    cout << "Игра загружена\n";
+    cout << "Игра загружена\n" << endl;
     PrintBoard();
     return true;
 }
@@ -207,11 +217,13 @@ int main()
         switch (choice) {
         case 1:
             play(player);
+            player.AddGamesPlayed();
             break;
         case 2:
             player.ShowInfo();
             break;
         case 3:
+            player.ShowStatistics();
             break;
         case 4:
             SaveGame(player);
