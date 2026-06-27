@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <ctime>
 using namespace std;
 
 char board[3][3];
@@ -25,8 +26,16 @@ public:
         wins++;
     }
     void ShowStatistics() {
-        double percent = (double)wins / gamesPlayed * 100;
-        cout << "Процент побед: " << percent << "%\n" << endl;
+        cout << "Игр сыграно: " << gamesPlayed << endl;
+
+        if (gamesPlayed == 0) {
+            cout << "Процент побед: 0%" << endl;
+            return;
+        }
+        else {
+            double percent = (double)wins / gamesPlayed * 100;
+            cout << "Процент побед: " << percent << "%\n" << endl;
+        }
     }
     void AddGamesPlayed() {
         gamesPlayed++;
@@ -58,9 +67,9 @@ public:
 
 void InitBoard()
 {
-    for (int i = 1; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
-        for (int j = 1; j < 4; j++)
+        for (int j = 0; j < 3; j++)
         {
             board[i][j] = '-';
         }
@@ -69,43 +78,50 @@ void InitBoard()
 
 void PrintBoard()
 {
-    for (int i = 1; i < 4; i++) {
-        for (int j = 1; j < 4; j++) {
+    cout << "  1 2 3\n";
+
+    for (int i = 0; i < 3; i++)
+    {
+        cout << i + 1 << " ";
+
+        for (int j = 0; j < 3; j++)
+        {
             cout << board[i][j] << " ";
         }
+
         cout << endl;
     }
 }
 
 bool checkWin(char p) {
     // Строки
-    for (int i = 1; i < 4; i++) {
-        if (board[i][1] == p &&
-            board[i][2] == p &&
-            board[i][3] == p) {
+    for (int i = 0; i < 3; i++) {
+        if (board[i][0] == p &&
+            board[i][1] == p &&
+            board[i][2] == p) {
             return true;
         }
     }
 
     // Столбцы
-    for (int j = 1; j < 4; j++) {
-        if (board[1][j] == p &&
-            board[2][j] == p &&
-            board[3][j] == p) {
+    for (int j = 0; j < 3; j++) {
+        if (board[0][j] == p &&
+            board[1][j] == p &&
+            board[2][j] == p) {
             return true;
         }
     }
 
     // Диагонали
-    if (board[1][1] == p &&
-        board[2][2] == p &&
-        board[3][3] == p){
+    if (board[0][0] == p &&
+        board[1][1] == p &&
+        board[2][2] == p){
         return true;
         }
 
-    if (board[1][3] == p &&
-        board[2][2] == p &&
-        board[3][1] == p) {
+    if (board[0][2] == p &&
+        board[1][1] == p &&
+        board[2][0] == p) {
         return true;
     }
     return false;
@@ -113,9 +129,9 @@ bool checkWin(char p) {
 
 bool IsDraw()
 {
-    for (int i = 1; i < 4; i++)
+    for (int i = 0; i < 3; i++)
     {
-        for (int j = 1; j < 4; j++)
+        for (int j = 0; j < 3; j++)
         {
             if (board[i][j] == '-')
                 return false;
@@ -136,11 +152,25 @@ void play(Player& player)
         int row, col;
         cout << "Ваш ход" << endl;
         cout << "Введите ряд(1-3): ";
-        cin >> row;
+        if (!(cin >> row))
+        {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Ошибка ввода!\n";
+            continue;
+        }
         cout << "Введите столбец(1-3): ";
-        cin >> col;
+        if (!(cin >> col))
+        {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Ошибка ввода!\n";
+            continue;
+        }
+        row--;
+        col--;
 
-        if (row < 1 || row > 3 || col < 1 || col> 3 ||
+        if (row < 0 || row > 2 || col < 0 || col> 2 ||
             board[row][col] != '-')
         {
             cout << "Неправильный ход" << endl;
@@ -166,20 +196,27 @@ void play(Player& player)
         int r, c;
 
         do {
-            r = rand() % 3 + 1;
-            c = rand() % 3 + 1;
+            r = rand() % 3;
+            c = rand() % 3;
         }
         while (board[r][c] != '-');
 
-        board[r][c] = '0';
-        if (checkWin('0'))
+        board[r][c] = 'O';
+        if (checkWin('O'))
         {
             PrintBoard();
             cout << "Вы проиграли" << endl;
             break;
         }
+        else if (IsDraw())
+        {
+            PrintBoard();
+            cout << "Ничья" << endl;
+            break;
+        }
     }
 }
+
 
 void SaveGame(Player& player)
 {
@@ -203,7 +240,7 @@ void SaveGame(Player& player)
     }
 
     gamefile.close();
-    cout << "Игра сохранена\n" << endl;
+    cout<<"Игра сохранена" << endl;
 }
 
 bool LoadGame(Player& player)
@@ -213,16 +250,31 @@ bool LoadGame(Player& player)
     int wins;
 
     ifstream playerfile("savePlayer.txt");
+    if (!playerfile.is_open())
+    {
+        cout << "Сохранение игры не найдено!\n";
+        return false;
+    }
     getline(playerfile, name);
-    playerfile >> games;
     playerfile >> wins;
+    playerfile >> games;
+
 
     player.SetName(name);
     player.SetWins(wins);
     player.SetGamesPlayed(games);
     playerfile.close();
 
+    player.ShowInfo();
+    cout << "Данные игрока загружены\n" << endl;
+
     ifstream gamefile("saveGame.txt");
+
+    if (!gamefile.is_open())
+    {
+        cout << "Сохранение игры не найдено!\n";
+        return false;
+    }
 
     for (int i = 0; i < 3; i++)
     {
@@ -233,14 +285,15 @@ bool LoadGame(Player& player)
     }
 
     gamefile.close();
-    cout << "Игра загружена\n" << endl;
+    cout << "Последняя игра: \n" << endl;
     PrintBoard();
     return true;
 }
 
 int main()
 {
-    setlocale(0,"rus");
+    setlocale(0, "rus");
+    srand((unsigned int)time(0));
     int choice;
     string  name;
 
@@ -254,11 +307,18 @@ int main()
         cout << "1. Начать новую игру" << endl;
         cout << "2. Показать инфо игрока" << endl;
         cout << "3. Статистика" << endl;
-        cout << "4. Сохранить игру" << endl;
-        cout << "5. Загрузить игру" << endl;
+        cout << "4. Сохранить данные" << endl;
+        cout << "5. Загрузить данные" << endl;
         cout << "6. выход" << endl;
         cout << "Ваш выбор: ";
-        cin >> choice;
+        cout << endl;
+        if (!(cin >> choice))
+        {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Ошибка ввода\n";
+            continue;
+        }
         switch (choice) {
         case 1:
             play(player);
@@ -279,7 +339,7 @@ int main()
         case 6:
             return 0;
         default:
-            cout << "Ошибка" << endl;
+            cout << "Ошибка ввода\n"<< endl;
             break;
         }
     }
